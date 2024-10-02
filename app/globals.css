@@ -2,26 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 기본 컨테이너 스타일 */
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20px;
+  max-width: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* 타이틀 스타일 */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* 폼 스타일 */
+.form {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* 입력 필드 스타일 */
+.input {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* 제출 버튼 스타일 */
+.submit-button {
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #0070f3;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #005bb5;
+}
+/* 성공 메시지 스타일 */
+.successMessage {
+  color: green;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* 에러 메시지 스타일 */
+.errorMessage {
+  color: red;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* 반응형 디자인 */
+
+/* 태블릿 (min-width: 600px) */
+@media (min-width: 600px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .form {
+    padding: 25px;
+    max-width: 500px;
+  }
+
+  .input {
+    font-size: 1.1rem;
+    padding: 12px 18px;
+  }
+
+  .submit-button {
+    font-size: 1.1rem;
+    padding: 12px 18px;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* 데스크탑 (min-width: 992px) */
+@media (min-width: 992px) {
+  .title {
+    font-size: 3rem;
+  }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .form {
+    padding: 30px;
+    max-width: 600px;
+  }
+
+  .input {
+    font-size: 1.2rem;
+    padding: 14px 20px;
+  }
+
+  .submit-button {
+    font-size: 1.2rem;
+    padding: 14px 20px;
   }
 }
