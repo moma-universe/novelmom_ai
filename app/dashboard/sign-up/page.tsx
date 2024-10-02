@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUp,
-  UserButton,
-} from "@clerk/nextjs";
+//remove signin
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const SignUpPage = () => {
   return (
