@@ -9,12 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/localizations": "^3.1.2",
     "@clerk/nextjs": "^5.7.1",
     "bcrypt": "^5.1.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.9.0",
+    "lucide-react": "^0.447.0",
     "mongodb": "^6.9.0",
     "next": "14.2.14",
+    "next-themes": "^0.3.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "react-toastify": "^10.0.5",
+    "svix": "^1.37.0",
+    "tailwind-merge": "^2.5.3",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
