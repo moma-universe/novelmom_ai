@@ -1,7 +1,7 @@
-import { TextChunk } from "@/lib/database/models/TextChunk";
 import { getDatabase } from "@/lib/database/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { TextChunk } from "@/lib/database/models/TextChunk";
 
 export async function GET(req: NextRequest) {
   try {

@@ -4,8 +4,9 @@ import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { getDatabase } from "@/lib/database/mongodb";
-import { createUser, User } from "@/lib/database/models/User";
 import { MongoError } from "mongodb";
+import { createUser } from "@/lib/action/user.actions";
+import { IUser } from "@/lib/database/models/user.model";
 
 export async function POST(request: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET as string;
@@ -54,9 +55,6 @@ export async function POST(request: Request) {
     if (!db) {
       throw new Error("데이터베이스 연결 실패");
     }
-    const usersCollection = db.collection<User>("users");
-
-    console.log(evt.data);
 
     if (eventType === "user.created") {
       const { id, email_addresses, last_name, image_url } = evt.data;
@@ -70,12 +68,20 @@ export async function POST(request: Request) {
         );
       }
 
-      const newUser: User = createUser(id, email, last_name, image_url);
-
       try {
-        await usersCollection.insertOne(newUser);
+        const newUser: IUser = await createUser(
+          id,
+          email,
+          last_name,
+          image_url
+        );
+        console.log("새 사용자가 생성되었습니다:", newUser);
       } catch (error) {
-        if (error instanceof MongoError && error.code === 11000) {
+        if (
+          error instanceof Error &&
+          error.name === "MongoServerError" &&
+          (error as any).code === 11000
+        ) {
           console.error("중복된 사용자 ID:", id);
           return NextResponse.json(
             { error: "이미 존재하는 사용자" },

@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 
 export interface Novel {
   _id?: ObjectId;
+  userId: string;
   genre: string;
   title: string;
   age: number;
@@ -14,6 +15,7 @@ export interface Novel {
 }
 
 export function createNovel(
+  userId: string, // 사용자 ID 매개변수 추가
   genre: string,
   title: string,
   age: number,
@@ -25,6 +27,7 @@ export function createNovel(
   createdAt: Date = new Date()
 ): Novel {
   return {
+    userId,
     genre,
     title,
     age,

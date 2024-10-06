@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
-import { createNovel, Novel } from "../../../../lib/database/models/Novel";
-import {
-  createTextChunk,
-  TextChunk,
-} from "../../../../lib/database/models/TextChunk";
-import { createImage, Image } from "../../../../lib/database/models/Image";
 import { MongoError, ObjectId } from "mongodb";
 import { getDatabase } from "@/lib/database/mongodb";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { createNovel, Novel } from "@/lib/database/models/novel";
+import { createTextChunk, TextChunk } from "@/lib/database/models/TextChunk";
+import { createImage, Image } from "@/lib/database/models/Image";
 
 export async function POST(request: Request) {
   try {
+    const { userId } = auth(); // 현재 로그인한 사용자의 ID 가져오기
+    const user = await currentUser();
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "인증되지 않은 사용자입니다." },
+        { status: 401 }
+      );
+    }
     const {
       genre,
       title,
@@ -19,9 +26,6 @@ export async function POST(request: Request) {
       generatedTextChunks,
       generatedImages,
     } = await request.json();
-
-    console.log(age);
-    console.log("age type ", typeof age);
 
     // 입력 유효성 검사
     if (
@@ -48,6 +52,7 @@ export async function POST(request: Request) {
     }
 
     const db = await getDatabase();
+
     if (!db) {
       console.error("데이터베이스 연결 실패");
       return NextResponse.json(
@@ -61,7 +66,7 @@ export async function POST(request: Request) {
     const imagesCollection = db.collection<Image>("images");
 
     // 새로운 소설 생성
-    const newNovel = createNovel(genre, title, age, mood, summary, [], []);
+    const newNovel = createNovel(userId, genre, title, age, mood, summary);
 
     const novelResult = await novelsCollection.insertOne(newNovel);
     const novelId = novelResult.insertedId;
