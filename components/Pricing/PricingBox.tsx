@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import OfferList from "./OfferList";
 import { Price } from "@/types/price";
+import { useUser } from "@clerk/nextjs";
 
 declare global {
   interface Window {
@@ -9,18 +10,15 @@ declare global {
 }
 
 const PricingBox = ({ product }: { product: Price }) => {
+  const { user } = useUser();
+
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    // paymentHandler가 완료된 후 handleSubscription 실행
     try {
-      // paymentHandler가 프로미스를 반환한다고 가정합니다
       await paymentHandler();
-      // paymentHandler가 성공적으로 완료된 후에만 handleSubscription 실행
-      //   await handleSubscription(e);
     } catch (error) {
       console.error("구독 처리 중 오류 발생:", error);
-      // 사용자에게 오류를 표시하는 로직을 추가할 수 있습니다.
     }
   };
 
@@ -37,18 +35,15 @@ const PricingBox = ({ product }: { product: Price }) => {
 
       const data = {
         pg: "kakaopay.TC0ONETIME",
-        pay_method: "card",
         merchant_uid:
           new Date().getTime() + Math.floor(Math.random() * 1000000),
-        name: "테스트 결제",
-        amount: 10,
-
-        //User Session에서 가져오는 정보
-        //위에서 User Session 정보를 바탕으로 데이터베이스를 조회 후 정보 전달.
-        buyer_email: "gildong@gmail.com",
-        buyer_name: "홍길동",
+        name: product.nickname,
+        amount: product.unit_amount / 100,
+        buyer_email: user?.emailAddresses[0].emailAddress,
+        buyer_name: user?.fullName,
       };
 
+      //숨겨서 전달하는 코딩 필요.
       IMP.request_pay(data, async (rsp: any) => {
         const {
           success,
@@ -60,16 +55,9 @@ const PricingBox = ({ product }: { product: Price }) => {
           status,
           buyer_name,
           buyer_email,
-          buyer_tel,
-          buyer_addr,
-          buyer_postcode,
           paid_at,
           pg_tid,
-          emb_pg_provider,
         } = rsp;
-
-        console.log("imp_uid : ", imp_uid);
-        console.log("결제 상태:", success ? "성공" : "실패");
 
         if (success) {
           const res = await fetch("/api/transaction", {
@@ -92,10 +80,6 @@ const PricingBox = ({ product }: { product: Price }) => {
           if (!res.ok) {
             throw new Error(`서버 응답 오류: ${res.status}`);
           }
-          // 결제 성공 시 추가 로직 실행
-          console.log("결제 성공");
-        } else {
-          console.log("결제 실패:", error_msg);
         }
       });
     });

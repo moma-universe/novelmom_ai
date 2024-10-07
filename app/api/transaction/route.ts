@@ -109,8 +109,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
-
-    // 포트원 API 요청
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`유저 검증 및 결제 정보 생성 실패: ${error.message}`);
