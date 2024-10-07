@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { koKR } from "@clerk/localizations";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "노블맘",
@@ -14,10 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider localization={koKR} afterSignOutUrl="/">
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    </ClerkProvider>
+    <html lang="ko">
+      <body>
+        <ClerkProvider localization={koKR} afterSignOutUrl="/">
+          {children}
+        </ClerkProvider>
+        <Script src="https://cdn.iamport.kr/v1/iamport.js" />
+      </body>
+    </html>
   );
 }

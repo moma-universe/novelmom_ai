@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MongoError, ObjectId } from "mongodb";
+import { MongoError } from "mongodb";
 import { getDatabase } from "@/lib/database/mongodb";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createNovel, Novel } from "@/lib/database/models/novel";

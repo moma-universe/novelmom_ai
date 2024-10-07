@@ -35,7 +35,7 @@ const menuData: Menu[] = [
     id: 6,
     title: "멤버쉽",
     newTab: false,
-    path: "/membership",
+    path: "/pricing",
   },
 
   //   {

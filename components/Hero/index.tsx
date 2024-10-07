@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 const Hero = () => {
-  const [email, setEmail] = useState("");
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
   };
