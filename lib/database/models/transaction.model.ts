@@ -1,36 +1,22 @@
 import mongoose, { models } from "mongoose";
 
 export interface ITransaction {
-  userId: mongoose.Types.ObjectId;
-  clerkId: string;
   priceId: string;
   imp_uid: string;
-  amount: number;
+  paid_amount: number;
   merchant_uid: string;
-  status: "paid" | "failed" | "ready";
+  status: string;
   buyer_name: string;
   buyer_email: string;
-  buyer_tel: string;
-  buyer_addr: string;
-  buyer_postcode: string;
   paid_at: string;
   pg_tid: string;
-  emb_pg_provider: string;
+  pay_method: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const TransactionSchema = new mongoose.Schema<ITransaction>(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-      required: true,
-    },
-    clerkId: {
-      type: String,
-      required: true,
-    },
     priceId: {
       type: String,
       required: true,
@@ -40,7 +26,7 @@ const TransactionSchema = new mongoose.Schema<ITransaction>(
       required: true,
       unique: true,
     },
-    amount: {
+    paid_amount: {
       type: Number,
       required: true,
     },
@@ -51,26 +37,13 @@ const TransactionSchema = new mongoose.Schema<ITransaction>(
     },
     status: {
       type: String,
-      enum: ["paid", "failed", "ready"],
-      default: "ready",
+      required: true,
     },
     buyer_name: {
       type: String,
       required: true,
     },
     buyer_email: {
-      type: String,
-      required: true,
-    },
-    buyer_tel: {
-      type: String,
-      required: true,
-    },
-    buyer_addr: {
-      type: String,
-      required: true,
-    },
-    buyer_postcode: {
       type: String,
       required: true,
     },
@@ -83,7 +56,7 @@ const TransactionSchema = new mongoose.Schema<ITransaction>(
       required: true,
       unique: true,
     },
-    emb_pg_provider: {
+    pay_method: {
       type: String,
       required: true,
     },

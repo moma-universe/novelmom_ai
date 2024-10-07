@@ -3,10 +3,9 @@ import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { getDatabase } from "@/lib/database/mongodb";
-import { MongoError } from "mongodb";
 import { createUser } from "@/lib/action/user.actions";
 import { IUser } from "@/lib/database/models/user.model";
+import connectToDatabase from "@/lib/database/mongodb";
 
 export async function POST(request: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET as string;
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
 
     const eventType = evt.type;
 
-    const db = await getDatabase();
+    const db = await connectToDatabase();
     if (!db) {
       throw new Error("데이터베이스 연결 실패");
     }

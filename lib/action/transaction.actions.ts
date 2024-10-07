@@ -1,41 +1,35 @@
+import { ObjectId } from "mongodb";
 import Transaction, {
   ITransaction,
 } from "../database/models/transaction.model";
+import { Types } from "mongoose";
 
 export async function createTransaction(
-  userId: string,
-  clerkId: string,
+  userId: Types.ObjectId,
   priceId: string,
   imp_uid: string,
-  amount: number,
+  paid_amount: number,
   merchant_uid: string,
-  status: "paid" | "failed" | "ready",
+  status: string,
   buyer_name: string,
   buyer_email: string,
-  buyer_tel: string,
-  buyer_addr: string,
-  buyer_postcode: string,
   paid_at: string,
   pg_tid: string,
-  emb_pg_provider: string
+  pay_method: string
 ): Promise<ITransaction> {
   try {
     const newTransaction = new Transaction({
       userId,
-      clerkId,
       priceId,
       imp_uid,
-      amount,
+      paid_amount: Number(paid_amount),
       merchant_uid,
       status,
       buyer_name,
       buyer_email,
-      buyer_tel,
-      buyer_addr,
-      buyer_postcode,
       paid_at,
       pg_tid,
-      emb_pg_provider,
+      pay_method,
     });
 
     const savedTransaction = await newTransaction.save();
