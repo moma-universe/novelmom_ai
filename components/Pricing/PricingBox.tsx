@@ -41,13 +41,13 @@ const PricingBox = ({ product }: { product: Price }) => {
         amount: product.unit_amount / 100,
         buyer_email: user?.emailAddresses[0].emailAddress,
         buyer_name: user?.fullName,
+        notice_url: "http://localhost:3000",
       };
 
       //숨겨서 전달하는 코딩 필요.
       IMP.request_pay(data, async (rsp: any) => {
         const {
           success,
-          error_msg,
           merchant_uid,
           imp_uid,
           paid_amount,
@@ -60,7 +60,7 @@ const PricingBox = ({ product }: { product: Price }) => {
         } = rsp;
 
         if (success) {
-          const res = await fetch("/api/transaction", {
+          const res = await fetch("/api/webhooks/portone", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
