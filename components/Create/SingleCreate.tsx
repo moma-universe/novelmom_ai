@@ -2,24 +2,42 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import toast, { Toaster } from "react-hot-toast";
+import CustomToast from "../Toast";
 
 const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    toast.custom(
+      (t) => (
+        <CustomToast
+          t={t}
+          title="동화 생성 완료"
+          message="동화 생성이 성공적으로 완료되었습니다!"
+          onClose={() => toast.dismiss(t.id)}
+          icon="/images/icon/fox.png"
+          bgColor="#ffffff"
+          textColor="#5db48b"
+        />
+      ),
+      {
+        duration: 5000,
+      }
+    );
+
     if (typeof window !== "undefined" && isLoaded && !userId) {
-      toast.error("로그인이 필요합니다.");
       router.push("/");
     }
   }, [isLoaded, userId, router]);
 
   // 로딩 중이거나 사용자가 없으면 아무것도 렌더링하지 않음
   if (!isLoaded || !userId) {
+    //toast
     return null;
   }
 
@@ -50,7 +68,6 @@ const SingleCreate = () => {
     e.preventDefault();
 
     if (isButtonDisabled) {
-      toast.warn("1분 후에 다시 클릭해 주세요.");
       return;
     }
     setLoading(true);
@@ -98,9 +115,39 @@ const SingleCreate = () => {
       const createData = await createResponse.json();
 
       if (createResponse.ok) {
-        toast.success("소설이 성공적으로 생성되었습니다.");
+        toast.custom(
+          (t) => (
+            <CustomToast
+              t={t}
+              title="동화 생성 완료"
+              message="동화 생성이 성공적으로 완료되었습니다!"
+              onClose={() => toast.dismiss(t.id)}
+              icon="/images/icon/fox.png"
+              bgColor="#ffffff"
+              textColor="#5db48b"
+            />
+          ),
+          {
+            duration: 5000,
+          }
+        );
       } else {
-        toast.error(createData.error || "소설 생성에 실패하였습니다.");
+        toast.custom(
+          (t) => (
+            <CustomToast
+              t={t}
+              title="동화 생성 실패"
+              message="동화 생성 중 오류가 발생했습니다."
+              onClose={() => toast.dismiss(t.id)}
+              icon="/images/icon/fox.png"
+              bgColor="#ffffff"
+              textColor="#f55d5d"
+            />
+          ),
+          {
+            duration: 5000,
+          }
+        );
       }
     } catch (error) {
       console.error("오류 발생:", error);
@@ -115,6 +162,7 @@ const SingleCreate = () => {
 
   return (
     <>
+      <Toaster position="bottom-center" reverseOrder={false} />
       <motion.div
         variants={{
           hidden: {
@@ -215,13 +263,55 @@ const SingleCreate = () => {
               rows={10}
             />
           </div>
-          <div className="flex flex-col items-center justify-center w-full mt-5">
+
+          <div className="flex flex-col items-center justify-center w-full mt-2">
+            <AnimatePresence>
+              {loading ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-row items-center justify-start w-full  ml-5"
+                >
+                  <p className="text-sm">최대 1분 정도 소요됩니다.</p>
+                </motion.div>
+              ) : (
+                ""
+              )}
+            </AnimatePresence>
             <button
               type="submit"
-              className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600"
+              className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
               disabled={loading}
             >
-              {loading ? "동화 만드는중..." : "동화 만들기"}
+              {loading ? (
+                <div className="flex flex-row items-center justify-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>동화 만드는중...</span>
+                </div>
+              ) : (
+                "동화 만들기"
+              )}
             </button>
           </div>
 
