@@ -1,5 +1,5 @@
 import { TextChunk } from "@/lib/database/models/TextChunk";
-import { getDatabase } from "@/lib/database/mongodb";
+import connectToDatabase from "@/lib/database/mongodb";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
+    const db = await connectToDatabase();
     const textChunksCollection = db.collection<TextChunk>("textChunks");
 
     const chunks = await textChunksCollection

@@ -1,7 +1,7 @@
-import { getDatabase } from "@/lib/database/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { TextChunk } from "@/lib/database/models/TextChunk";
+import connectToDatabase from "@/lib/database/mongodb";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
+    const db = await connectToDatabase();
     const textChunksCollection = db.collection<TextChunk>("textChunks");
 
     const chunks = await textChunksCollection

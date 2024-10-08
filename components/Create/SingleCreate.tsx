@@ -13,7 +13,6 @@ const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const [slides, setSlides] = useState<React.ReactNode[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && isLoaded && !userId) {
@@ -39,6 +38,8 @@ const SingleCreate = () => {
   const [generatedTextChunks, setGeneratedTextChunks] = useState<string[]>([]);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  const [showReplayModal, setShowReplayModal] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -84,7 +85,7 @@ const SingleCreate = () => {
         setGeneratedImages(data.images);
       }
 
-      // 소설 생성 API 호출
+      //modal에서 저장을 누르면 database에 넘어가게끔 설정
       const createResponse = await fetch("/api/novel/create", {
         method: "POST",
         headers: {
@@ -145,29 +146,12 @@ const SingleCreate = () => {
     }, 3000);
   };
 
-  useEffect(() => {
-    if (generatedTextChunks.length > 0 && generatedImages.length > 0) {
-      const newSlides = generatedTextChunks.map((chunk, index) => (
-        <div key={index} className="flex flex-col items-center">
-          <p className="text-sm mb-2">{chunk}</p>
-          <Image
-            src={generatedImages[index]}
-            width={300}
-            height={300}
-            alt={`Generated Image ${index + 1}`}
-            className="rounded-lg"
-          />
-        </div>
-      ));
-      setSlides(newSlides);
-    }
-  }, [generatedTextChunks, generatedImages]);
-
   const handleModalConfirm = () => {
-    // 여기에 확인 버튼을 눌렀을 때의 로직을 추가합니다.
-    // 예: 생성된 동화 페이지로 이동
-    // ex) router.push('/generated-novel');
-    setShowModal(false);
+    //
+  };
+
+  const handlePreviewClick = () => {
+    setShowReplayModal(true);
   };
 
   return (
@@ -177,7 +161,18 @@ const SingleCreate = () => {
         <NovelModal
           onClose={() => setShowModal(false)}
           onConfirm={handleModalConfirm}
-          slides={slides}
+          generatedTextChunks={generatedTextChunks}
+          generatedImages={generatedImages}
+        />
+      )}
+
+      {/* modal ui 테스트 */}
+      {showReplayModal && (
+        <NovelModal
+          onClose={() => setShowReplayModal(false)}
+          onConfirm={handleModalConfirm}
+          generatedTextChunks={generatedTextChunks}
+          generatedImages={generatedImages}
         />
       )}
       <motion.div
@@ -337,11 +332,6 @@ const SingleCreate = () => {
               <h2 className="text-xl font-semibold">생성된 텍스트 및 이미지</h2>
               {generatedTextChunks.map((chunk, index) => (
                 <div key={index} className="mb-5">
-                  <textarea
-                    readOnly
-                    value={chunk}
-                    className="w-full h-32 p-2 border rounded-md resize-none bg-gray-100"
-                  />
                   <Image
                     src={generatedImages[index]}
                     width={500}
@@ -349,9 +339,25 @@ const SingleCreate = () => {
                     alt={`Generated Image ${index + 1}`}
                     className="mt-2 rounded-lg overflow-hidden"
                   />
+                  <textarea
+                    readOnly
+                    value={chunk}
+                    className="w-full h-32 p-2 border rounded-md resize-none bg-gray-100"
+                  />
                 </div>
               ))}
             </div>
+          )}
+
+          {generatedTextChunks.length > 0 && generatedImages.length > 0 && (
+            <button
+              type="button"
+              onClick={handlePreviewClick}
+              className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 mt-2"
+              disabled={generatedTextChunks.length === 0}
+            >
+              다시보기
+            </button>
           )}
         </form>
       </motion.div>
