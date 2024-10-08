@@ -7,29 +7,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import toast, { Toaster } from "react-hot-toast";
 import CustomToast from "../Toast";
+import NovelModal from "../Modal/NovelModal/Index";
 
 const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const [slides, setSlides] = useState<React.ReactNode[]>([]);
 
   useEffect(() => {
-    toast.custom(
-      (t) => (
-        <CustomToast
-          t={t}
-          title="동화 생성 완료"
-          message="동화 생성이 성공적으로 완료되었습니다!"
-          onClose={() => toast.dismiss(t.id)}
-          icon="/images/icon/fox.png"
-          bgColor="#ffffff"
-          textColor="#5db48b"
-        />
-      ),
-      {
-        duration: 5000,
-      }
-    );
-
     if (typeof window !== "undefined" && isLoaded && !userId) {
       router.push("/");
     }
@@ -112,8 +98,6 @@ const SingleCreate = () => {
         }),
       });
 
-      const createData = await createResponse.json();
-
       if (createResponse.ok) {
         toast.custom(
           (t) => (
@@ -131,6 +115,7 @@ const SingleCreate = () => {
             duration: 5000,
           }
         );
+        setShowModal(true);
       } else {
         toast.custom(
           (t) => (
@@ -160,9 +145,41 @@ const SingleCreate = () => {
     }, 3000);
   };
 
+  useEffect(() => {
+    if (generatedTextChunks.length > 0 && generatedImages.length > 0) {
+      const newSlides = generatedTextChunks.map((chunk, index) => (
+        <div key={index} className="flex flex-col items-center">
+          <p className="text-sm mb-2">{chunk}</p>
+          <Image
+            src={generatedImages[index]}
+            width={300}
+            height={300}
+            alt={`Generated Image ${index + 1}`}
+            className="rounded-lg"
+          />
+        </div>
+      ));
+      setSlides(newSlides);
+    }
+  }, [generatedTextChunks, generatedImages]);
+
+  const handleModalConfirm = () => {
+    // 여기에 확인 버튼을 눌렀을 때의 로직을 추가합니다.
+    // 예: 생성된 동화 페이지로 이동
+    // ex) router.push('/generated-novel');
+    setShowModal(false);
+  };
+
   return (
     <>
       <Toaster position="bottom-center" reverseOrder={false} />
+      {showModal && (
+        <NovelModal
+          onClose={() => setShowModal(false)}
+          onConfirm={handleModalConfirm}
+          slides={slides}
+        />
+      )}
       <motion.div
         variants={{
           hidden: {

@@ -26,6 +26,7 @@
     "react-hot-toast": "^2.4.1",
     "react-toastify": "^10.0.5",
     "svix": "^1.37.0",
+    "swiper": "^11.1.14",
     "tailwind-merge": "^2.5.3",
     "tailwindcss-animate": "^1.0.7"
   },
