@@ -5,14 +5,15 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import toast, { Toaster } from "react-hot-toast";
-import CustomToast from "../Toast";
+import { Toaster } from "react-hot-toast";
 import NovelModal from "../Modal/NovelModal/Index";
+import DeleteModal from "../Modal/DeleteModal";
 
 const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && isLoaded && !userId) {
@@ -84,56 +85,8 @@ const SingleCreate = () => {
       if (data.images) {
         setGeneratedImages(data.images);
       }
-
-      //modal에서 저장을 누르면 database에 넘어가게끔 설정
-      const createResponse = await fetch("/api/novel/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          age: Number(formData.age),
-          generatedTextChunks: data.textChunks || [],
-          generatedImages: data.images || [],
-        }),
-      });
-
-      if (createResponse.ok) {
-        toast.custom(
-          (t) => (
-            <CustomToast
-              t={t}
-              title="동화 생성 완료"
-              message="동화 생성이 성공적으로 완료되었습니다!"
-              onClose={() => toast.dismiss(t.id)}
-              icon="/images/icon/fox.png"
-              bgColor="#ffffff"
-              textColor="#5db48b"
-            />
-          ),
-          {
-            duration: 5000,
-          }
-        );
+      if (response.ok) {
         setShowModal(true);
-      } else {
-        toast.custom(
-          (t) => (
-            <CustomToast
-              t={t}
-              title="동화 생성 실패"
-              message="동화 생성 중 오류가 발생했습니다."
-              onClose={() => toast.dismiss(t.id)}
-              icon="/images/icon/fox.png"
-              bgColor="#ffffff"
-              textColor="#f55d5d"
-            />
-          ),
-          {
-            duration: 5000,
-          }
-        );
       }
     } catch (error) {
       console.error("오류 발생:", error);
@@ -154,6 +107,35 @@ const SingleCreate = () => {
     setShowReplayModal(true);
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const response = await fetch("/api/novel/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+        }),
+      });
+
+      if (response.ok) {
+        // 삭제 성공 시 create 페이지로 리다이렉트
+        router.push("/create");
+      } else {
+        console.error("삭제 실패");
+        // 에러 처리 (예: 토스트 메시지 표시)
+      }
+    } catch (error) {
+      console.error("삭제 중 오류 발생:", error);
+      // 에러 처리 (예: 토스트 메시지 표시)
+    }
+  };
+
   return (
     <>
       <Toaster position="bottom-center" reverseOrder={false} />
@@ -163,16 +145,25 @@ const SingleCreate = () => {
           onConfirm={handleModalConfirm}
           generatedTextChunks={generatedTextChunks}
           generatedImages={generatedImages}
+          formData={formData}
         />
       )}
 
-      {/* modal ui 테스트 */}
       {showReplayModal && (
         <NovelModal
           onClose={() => setShowReplayModal(false)}
           onConfirm={handleModalConfirm}
           generatedTextChunks={generatedTextChunks}
           generatedImages={generatedImages}
+          formData={formData}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeleteModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteConfirm}
+          message="정말로 이 동화를 삭제하시겠습니까? 삭제된 동화는 복구할 수 없습니다."
         />
       )}
       <motion.div
@@ -292,39 +283,59 @@ const SingleCreate = () => {
                 ""
               )}
             </AnimatePresence>
-            <button
-              type="submit"
-              className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex flex-row items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <span>동화 만드는중...</span>
-                </div>
-              ) : (
-                "동화 만들기"
-              )}
-            </button>
+            {generatedTextChunks.length === 0 ||
+            generatedImages.length === 0 ? (
+              <button
+                type="submit"
+                className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex flex-row items-center justify-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>동화 만드는중...</span>
+                  </div>
+                ) : (
+                  "동화 만들기"
+                )}
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePreviewClick}
+                  className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 mt-2 w-full"
+                >
+                  크게보기
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteClick}
+                  className="bg-red-400 text-white py-2 px-4 rounded-full hover:bg-red-600 mt-2 w-full"
+                >
+                  다시 만들기
+                </button>
+              </>
+            )}
           </div>
 
           {generatedTextChunks.length > 0 && (
@@ -342,22 +353,11 @@ const SingleCreate = () => {
                   <textarea
                     readOnly
                     value={chunk}
-                    className="w-full h-32 p-2 border rounded-md resize-none bg-gray-100"
+                    className="w-full h-32 p-2 mt-2 rounded-lg resize-none dark:bg-black dark:bg-opacity-100"
                   />
                 </div>
               ))}
             </div>
-          )}
-
-          {generatedTextChunks.length > 0 && generatedImages.length > 0 && (
-            <button
-              type="button"
-              onClick={handlePreviewClick}
-              className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 mt-2"
-              disabled={generatedTextChunks.length === 0}
-            >
-              다시보기
-            </button>
           )}
         </form>
       </motion.div>
