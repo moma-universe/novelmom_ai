@@ -1,12 +1,12 @@
 import React from "react";
 
-interface DeleteModalProps {
+interface ReGenerateModalProps {
   onClose: () => void;
   onConfirm: () => void;
   message: string;
 }
 
-const DeleteModal: React.FC<DeleteModalProps> = ({
+const ReGenerateModal: React.FC<ReGenerateModalProps> = ({
   onClose,
   onConfirm,
   message,
@@ -36,4 +36,4 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   );
 };
 
-export default DeleteModal;
+export default ReGenerateModal;

@@ -7,13 +7,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
 import NovelModal from "../Modal/NovelModal/Index";
-import DeleteModal from "../Modal/DeleteModal";
+
+import ReGenerateModal from "../Modal/ReGenerateModal";
 
 const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showReGenerateModal, setShowReGenerateModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && isLoaded && !userId) {
@@ -107,32 +108,17 @@ const SingleCreate = () => {
     setShowReplayModal(true);
   };
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
+  const handleReGenerateClick = () => {
+    setShowReGenerateModal(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleReGenerateConfirm = async () => {
     try {
-      const response = await fetch("/api/novel/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: formData.title,
-        }),
-      });
-
-      if (response.ok) {
-        // 삭제 성공 시 create 페이지로 리다이렉트
-        router.push("/create");
-      } else {
-        console.error("삭제 실패");
-        // 에러 처리 (예: 토스트 메시지 표시)
-      }
+      router.push("/create");
     } catch (error) {
-      console.error("삭제 중 오류 발생:", error);
-      // 에러 처리 (예: 토스트 메시지 표시)
+      console.error("다시 만들기 오류 : ", error);
+    } finally {
+      setShowReGenerateModal(false);
     }
   };
 
@@ -159,11 +145,11 @@ const SingleCreate = () => {
         />
       )}
 
-      {showDeleteModal && (
-        <DeleteModal
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDeleteConfirm}
-          message="정말로 이 동화를 삭제하시겠습니까? 삭제된 동화는 복구할 수 없습니다."
+      {showReGenerateModal && (
+        <ReGenerateModal
+          onClose={() => setShowReGenerateModal(false)}
+          onConfirm={handleReGenerateConfirm}
+          message="정말로 이 동화를 다시 만드시겠습니까? 기존 만들어진 동화는 삭제됩니다."
         />
       )}
       <motion.div
@@ -285,39 +271,48 @@ const SingleCreate = () => {
             </AnimatePresence>
             {generatedTextChunks.length === 0 ||
             generatedImages.length === 0 ? (
-              <button
-                type="submit"
-                className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex flex-row items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>동화 만드는중...</span>
-                  </div>
-                ) : (
-                  "동화 만들기"
-                )}
-              </button>
+              <>
+                <button
+                  type="submit"
+                  className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex flex-row items-center justify-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>동화 만드는중...</span>
+                    </div>
+                  ) : (
+                    "동화 만들기"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReGenerateClick}
+                  className="dark:bg-black bg-white border border-gray-300 dark:border-gray-700 hover:opacity-80 text-white py-2 px-4 rounded-full hover:bg-red-500 mt-2 w-full"
+                >
+                  다시 만들기
+                </button>
+              </>
             ) : (
               <>
                 <button
@@ -326,13 +321,6 @@ const SingleCreate = () => {
                   className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 mt-2 w-full"
                 >
                   크게보기
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteClick}
-                  className="bg-red-400 text-white py-2 px-4 rounded-full hover:bg-red-600 mt-2 w-full"
-                >
-                  다시 만들기
                 </button>
               </>
             )}

@@ -82,6 +82,7 @@ export async function createNovel(
 }
 
 export async function getNovels(): Promise<INovel[]> {
+  await connectToDatabase();
   try {
     return await Novel.find()
       .populate("textChunkIds")
@@ -94,6 +95,7 @@ export async function getNovels(): Promise<INovel[]> {
 }
 
 export async function deleteNovel(novelId: string): Promise<void> {
+  await connectToDatabase();
   const session = await mongoose.startSession();
   session.startTransaction();
 
