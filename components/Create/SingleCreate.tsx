@@ -112,6 +112,7 @@ const SingleCreate = () => {
     setShowReGenerateModal(true);
   };
 
+  // Novel Regenerate
   const handleReGenerateConfirm = async () => {
     try {
       router.push("/create");

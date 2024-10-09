@@ -1,14 +1,17 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { INovel } from "@/lib/database/models/Novel";
-import { IImage } from "@/lib/database/models/Image";
+import { INovel } from "@/lib/database/models/Novel.model";
 
 interface SingleNovelProps {
   novel: INovel;
 }
 
 const SingleNovel: React.FC<SingleNovelProps> = ({ novel }) => {
+  const firstCloudflareImageUrl =
+    novel.cloudflareImageUrls && novel.cloudflareImageUrls.length > 0
+      ? novel.cloudflareImageUrls[0]
+      : "/images/default-novel-image.jpg";
   return (
     <motion.div
       variants={{
@@ -39,7 +42,15 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel }) => {
         {novel.title}
       </h3>
       <p>{novel.summary}</p>
-      <div className="w-full h-48 relative"></div>
+      <div className="w-full h-48 relative">
+        <Image
+          src={firstCloudflareImageUrl}
+          alt={`First image of ${novel.title}`}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-lg"
+        />
+      </div>
     </motion.div>
   );
 };

@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
-import Novel, { INovel } from "../database/models/Novel";
-import TextChunk from "../database/models/TextChunk";
-import Image from "../database/models/Image";
+import Novel, { INovel } from "../database/models/Novel.model";
+import TextChunk from "../database/models/TextChunk.model";
+import Image from "../database/models/Image.model";
 import connectToDatabase from "../database/mongoose";
+import { uploadImageToCloudflare } from "../cloudflare/cloudflare";
 
 export async function createNovel(
   userId: string,
@@ -19,6 +20,9 @@ export async function createNovel(
   session.startTransaction();
 
   try {
+    const cloudflareImageUrls = await Promise.all(
+      generatedImages.map((imageUrl) => uploadImageToCloudflare(imageUrl))
+    );
     const newNovel = new Novel({
       userId,
       genre,
@@ -26,6 +30,8 @@ export async function createNovel(
       age,
       mood,
       summary,
+      originalImageUrls: generatedImages,
+      cloudflareImageUrls,
     });
 
     const savedNovel = await newNovel.save({ session });

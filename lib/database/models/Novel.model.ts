@@ -9,6 +9,8 @@ export interface INovel extends Document {
   summary: string;
   textChunkIds: mongoose.Types.ObjectId[];
   imageIds: mongoose.Types.ObjectId[];
+  originalImageUrls: string[];
+  cloudflareImageUrls: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +25,8 @@ const NovelSchema: Schema = new Schema(
     summary: { type: String, required: true },
     textChunkIds: [{ type: Schema.Types.ObjectId, ref: "TextChunk" }],
     imageIds: [{ type: Schema.Types.ObjectId, ref: "Image" }],
+    originalImageUrls: [{ type: String }],
+    cloudflareImageUrls: [{ type: String }],
   },
   { timestamps: true }
 );

@@ -1,10 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import SectionHeader from "../Common/SectionHeader";
-import SingleNovle from "./SingleNovel";
 import { useAuth } from "@clerk/nextjs";
-import { INovel } from "@/lib/database/models/Novel";
 import SingleNovel from "./SingleNovel";
+import { INovel } from "@/lib/database/models/Novel.model";
 
 const MyNovelList = () => {
   const { isLoaded, userId } = useAuth();
