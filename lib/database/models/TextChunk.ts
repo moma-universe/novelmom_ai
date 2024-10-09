@@ -1,26 +1,23 @@
-import { ObjectId } from "mongodb";
+import mongoose, { Schema, Document, models } from "mongoose";
 
-export interface TextChunk {
-  _id?: ObjectId;
-  novelId: ObjectId;
+export interface ITextChunk extends Document {
+  novelId: mongoose.Types.ObjectId;
   index: number;
   text: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export function createTextChunk(
-  novelId: ObjectId,
-  index: number,
-  text: string,
-  updatedAt: Date = new Date(),
-  createdAt: Date = new Date()
-): TextChunk {
-  return {
-    novelId,
-    index,
-    text,
-    createdAt,
-    updatedAt,
-  };
-}
+const TextChunkSchema: Schema = new Schema(
+  {
+    novelId: { type: Schema.Types.ObjectId, ref: "Novel", required: true },
+    index: { type: Number, required: true },
+    text: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+const TextChunk =
+  models?.TextChunk || mongoose.model<ITextChunk>("TextChunk", TextChunkSchema);
+
+export default TextChunk;

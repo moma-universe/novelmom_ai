@@ -46,7 +46,14 @@ const NovelModal: React.FC<NovelModalProps> = ({
         }),
       });
 
+      const responseData = await createResponse.json();
+
       if (createResponse.ok) {
+        if (!createResponse.ok) {
+          throw new Error(
+            responseData.error || "알 수 없는 오류가 발생했습니다."
+          );
+        }
         toast.custom(
           (t) => (
             <CustomToast

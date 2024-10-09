@@ -1,26 +1,22 @@
-import { ObjectId } from "mongodb";
+import mongoose, { Schema, Document, models } from "mongoose";
 
-export interface Image {
-  _id?: ObjectId;
-  novelId: ObjectId;
+export interface IImage extends Document {
+  novelId: mongoose.Types.ObjectId;
   index: number;
   imageUrl: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export function createImage(
-  novelId: ObjectId,
-  index: number,
-  imageUrl: string,
-  updatedAt: Date = new Date(),
-  createdAt: Date = new Date()
-): Image {
-  return {
-    novelId,
-    index,
-    imageUrl,
-    createdAt,
-    updatedAt,
-  };
-}
+const ImageSchema: Schema = new Schema(
+  {
+    novelId: { type: Schema.Types.ObjectId, ref: "Novel", required: true },
+    index: { type: Number, required: true },
+    imageUrl: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+const Image = models?.Image || mongoose.model<IImage>("Image", ImageSchema);
+
+export default Image;

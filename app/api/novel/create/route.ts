@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { MongoError } from "mongodb";
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { createNovel, Novel } from "@/lib/database/models/novel";
-import { createTextChunk, TextChunk } from "@/lib/database/models/TextChunk";
-import { createImage, Image } from "@/lib/database/models/Image";
-import connectToDatabase from "@/lib/database/mongodb";
+import { auth } from "@clerk/nextjs/server";
+import { createNovel } from "@/lib/action/novel.action";
 
 export async function POST(request: Request) {
   try {
-    const { userId } = auth(); // 현재 로그인한 사용자의 ID 가져오기
+    const { userId } = auth();
 
     if (!userId) {
       return NextResponse.json(
@@ -16,6 +12,7 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
     const {
       genre,
       title,
@@ -42,6 +39,22 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      !Array.isArray(generatedTextChunks) ||
+      generatedTextChunks.length === 0
+    ) {
+      return NextResponse.json(
+        { error: "생성된 텍스트 청크는 비어있지 않은 배열이어야 합니다." },
+        { status: 400 }
+      );
+    }
+    if (!Array.isArray(generatedImages) || generatedImages.length === 0) {
+      return NextResponse.json(
+        { error: "생성된 이미지는 비어있지 않은 배열이어야 합니다." },
+        { status: 400 }
+      );
+    }
+
     // 추가적인 유효성 검사
     if (summary.length > 100) {
       return NextResponse.json(
@@ -50,135 +63,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const db = await connectToDatabase();
-
-    if (!db) {
-      console.error("데이터베이스 연결 실패");
-      return NextResponse.json(
-        { error: "데이터베이스 연결에 실패했습니다." },
-        { status: 500 }
-      );
-    }
-
-    const novelsCollection = db.collection<Novel>("novels");
-    const textChunksCollection = db.collection<TextChunk>("textChunks");
-    const imagesCollection = db.collection<Image>("images");
-
-    // 새로운 소설 생성
-    const newNovel = createNovel(userId, genre, title, age, mood, summary);
-
-    const novelResult = await novelsCollection.insertOne(newNovel);
-    const novelId = novelResult.insertedId;
-
-    // 텍스트 청크와 이미지 저장
-    try {
-      const textChunkPromises = generatedTextChunks.map((text, index) =>
-        textChunksCollection.insertOne(createTextChunk(novelId, index, text))
-      );
-      const imagePromises = generatedImages.map((imageUrl, index) =>
-        imagesCollection.insertOne(createImage(novelId, index, imageUrl))
-      );
-
-      const [textChunkResults, imageResults] = await Promise.all([
-        Promise.all(textChunkPromises),
-        Promise.all(imagePromises),
-      ]);
-
-      const textChunkIds = textChunkResults.map((result) => result.insertedId);
-      const imageIds = imageResults.map((result) => result.insertedId);
-
-      // 소설 문서 업데이트에 참조 추가
-      await novelsCollection.updateOne(
-        { _id: novelId },
-        {
-          $set: {
-            textChunkIds,
-            imageIds,
-          },
-        }
-      );
-    } catch (error) {
-      console.error("텍스트 청크 또는 이미지 저장 중 오류:", error);
-      // 롤백: 생성된 소설 삭제
-      await novelsCollection.deleteOne({ _id: novelId });
-      return NextResponse.json(
-        { error: "텍스트 청크 또는 이미지 저장 중 오류가 발생했습니다." },
-        { status: 500 }
-      );
-    }
+    const novel = await createNovel(
+      userId,
+      genre,
+      title,
+      age,
+      mood,
+      summary,
+      generatedTextChunks,
+      generatedImages
+    );
 
     return NextResponse.json(
-      { message: "소설이 성공적으로 생성되었습니다.", id: novelId },
+      { message: "소설이 성공적으로 생성되었습니다.", id: novel._id },
       { status: 201 }
     );
   } catch (error) {
     console.error("소설 생성 오류:", error);
-    let errorMessage = "소설 생성에 실패했습니다.";
-    if (error instanceof Error) {
-      errorMessage += ` 오류 내용: ${error.message}`;
-    }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-}
-
-export async function GET() {
-  try {
-    const db = await connectToDatabase();
-    if (!db) {
-      console.error("데이터베이스 연결 실패");
-      return NextResponse.json(
-        { error: "데이터베이스 연결에 실패했습니다." },
-        { status: 500 }
-      );
-    }
-    const novelsCollection = db.collection<Novel>("novels");
-    const textChunksCollection = db.collection<TextChunk>("textChunks");
-    const imagesCollection = db.collection<Image>("images");
-
-    const novels = await novelsCollection.find().toArray();
-
-    // 각 소설에 대해 텍스트 청크와 이미지 가져오기
-    const novelsWithDetails = await Promise.all(
-      novels.map(async (novel) => {
-        try {
-          const textChunks = await textChunksCollection
-            .find({ novelId: novel._id })
-            .sort({ index: 1 })
-            .toArray();
-          const images = await imagesCollection
-            .find({ novelId: novel._id })
-            .sort({ index: 1 })
-            .toArray();
-
-          return {
-            ...novel,
-            textChunks: textChunks.map((chunk) => chunk.text),
-            images: images.map((image) => image.imageUrl),
-          };
-        } catch (error) {
-          console.error(
-            `소설 ID ${novel._id}의 상세 정보 조회 중 오류:`,
-            error
-          );
-          return {
-            ...novel,
-            textChunks: [],
-            images: [],
-            error: "상세 정보 조회 실패",
-          };
-        }
-      })
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "소설 생성에 실패했습니다.",
+      },
+      { status: 500 }
     );
-
-    return NextResponse.json(novelsWithDetails, { status: 200 });
-  } catch (error) {
-    console.error("소설 조회 오류:", error);
-    let errorMessage = "소설을 조회하는데 실패했습니다.";
-    if (error instanceof MongoError) {
-      errorMessage += ` 데이터베이스 오류: ${error.message}`;
-    } else if (error instanceof Error) {
-      errorMessage += ` 오류 내용: ${error.message}`;
-    }
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
