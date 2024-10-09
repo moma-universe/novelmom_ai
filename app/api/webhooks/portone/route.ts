@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ITransaction } from "@/lib/database/models/transaction.model";
 import { createTransaction } from "@/lib/action/transaction.actions";
 import User from "@/lib/database/models/user.model";
-import connectToDatabase from "@/lib/database/mongodb";
+import connectToDatabase from "@/lib/database/mongoose";
+
 export async function POST(req: NextRequest) {
   try {
     // Clerk 인증 확인

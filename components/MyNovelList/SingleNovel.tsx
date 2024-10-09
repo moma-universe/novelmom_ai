@@ -1,43 +1,47 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { INovel } from "@/lib/database/models/Novel";
+import { IImage } from "@/lib/database/models/Image";
 
-const SingleNovle = () => {
+interface SingleNovelProps {
+  novel: INovel;
+}
+
+const SingleNovel: React.FC<SingleNovelProps> = ({ novel }) => {
   return (
-    <>
-      <motion.div
-        variants={{
-          hidden: {
-            opacity: 0,
-            y: -10,
-          },
-
-          visible: {
-            opacity: 1,
-            y: 0,
-          },
-        }}
-        initial="hidden"
-        whileInView="visible"
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="animate_top z-40 rounded-lg border border-white bg-white p-7.5 shadow-solid-3 transition-all hover:shadow-solid-4 dark:border-strokedark dark:bg-blacksection dark:hover:bg-hoverdark xl:p-12.5"
-      >
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-primary">
-          <Image
-            src="/images/icon/icon-moon.svg"
-            width={36}
-            height={36}
-            alt="title"
-          />
-        </div>
-        <h3 className="mb-5 mt-7.5 text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-          타이틀
-        </h3>
-        <p>설명</p>
-      </motion.div>
-    </>
+    <motion.div
+      variants={{
+        hidden: {
+          opacity: 0,
+          y: -10,
+        },
+        visible: {
+          opacity: 1,
+          y: 0,
+        },
+      }}
+      initial="hidden"
+      whileInView="visible"
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      className="animate_top z-40 rounded-lg border border-white bg-white p-7.5 shadow-solid-3 transition-all hover:shadow-solid-4 dark:border-strokedark dark:bg-blacksection dark:hover:bg-hoverdark xl:p-12.5"
+    >
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-primary">
+        <Image
+          src="/images/icon/icon-moon.svg"
+          width={36}
+          height={36}
+          alt={novel.title}
+        />
+      </div>
+      <h3 className="mb-5 mt-7.5 text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
+        {novel.title}
+      </h3>
+      <p>{novel.summary}</p>
+      <div className="w-full h-48 relative"></div>
+    </motion.div>
   );
 };
 
-export default SingleNovle;
+export default SingleNovel;

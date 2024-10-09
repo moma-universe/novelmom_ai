@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import connectToDatabase from "@/lib/database/mongodb";
+
 import { NextResponse } from "next/server";
 import { deleteNovel } from "@/lib/action/novel.action";
+import connectToDatabase from "@/lib/database/mongoose";
 
 export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "DELETE") {

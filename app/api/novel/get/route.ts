@@ -1,45 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getNovels } from "@/lib/action/novel.action";
+import connectToDatabase from "@/lib/database/mongoose";
 
-import { ObjectId } from "mongodb";
-import { getDatabase } from "@/lib/database/mongodb";
-import { Novel } from "@/lib/database/models/Novel";
-import { TextChunk } from "@/lib/database/models/TextChunk";
-import { Image } from "@/lib/database/models/Image";
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
 
-export async function GET() {
+  const userId = req.nextUrl.searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  }
+
   try {
-    const db = await getDatabase();
-    const novelsCollection = db.collection<Novel>("novels");
-    const textChunksCollection = db.collection<TextChunk>("textChunks");
-    const imagesCollection = db.collection<Image>("images");
+    const novels = await getNovels();
+    const userNovels = novels.filter((novel) => novel.userId === userId);
 
-    const novels = await novelsCollection.find().toArray();
-
-    // 각 소설에 대해 텍스트 청크와 이미지 가져오기
-    const novelsWithDetails = await Promise.all(
-      novels.map(async (novel) => {
-        const textChunks = await textChunksCollection
-          .find({ novelId: novel._id })
-          .sort({ index: 1 })
-          .toArray();
-        const images = await imagesCollection
-          .find({ novelId: novel._id })
-          .sort({ index: 1 })
-          .toArray();
-
-        return {
-          ...novel,
-          textChunks: textChunks.map((chunk) => chunk.text),
-          images: images.map((image) => image.imageUrl),
-        };
-      })
-    );
-
-    return NextResponse.json(novelsWithDetails, { status: 200 });
+    return NextResponse.json({ novels: userNovels });
   } catch (error) {
-    console.error("소설 조회 오류:", error);
+    console.error("Error fetching novels:", error);
     return NextResponse.json(
-      { error: "소설을 조회하는데 실패했습니다." },
+      { error: "Failed to fetch novels" },
       { status: 500 }
     );
   }

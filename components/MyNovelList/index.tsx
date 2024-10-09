@@ -1,38 +1,56 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import SectionHeader from "../Common/SectionHeader";
 import SingleNovle from "./SingleNovel";
+import { useAuth } from "@clerk/nextjs";
+import { INovel } from "@/lib/database/models/Novel";
+import SingleNovel from "./SingleNovel";
 
 const MyNovelList = () => {
+  const { isLoaded, userId } = useAuth();
+  const [novels, setNovels] = useState<INovel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNovels = async () => {
+      if (isLoaded && userId) {
+        try {
+          const response = await fetch(`/api/novel/get?userId=${userId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setNovels(data.novels);
+          } else {
+            console.error("Failed to fetch novels");
+          }
+        } catch (error) {
+          console.error("Error fetching novels:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchNovels();
+  }, [isLoaded, userId]);
+
   return (
-    <>
-      {/* <!-- ===== Features Start ===== --> */}
-      <section id="features" className="py-20 lg:py-25 xl:py-30">
-        <div className="mx-auto max-w-c-1315 px-4 md:px-8 xl:px-0">
-          {/* <!-- Section Title Start --> */}
-          <SectionHeader
-            headerInfo={{
-              title: "SOLID FEATURES",
-              subtitle: "Core Features of Solid",
-              description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-            convallis tortor eros. Donec vitae tortor lacus. Phasellus aliquam
-            ante in maximus.`,
-            }}
-          />
-          {/* <!-- Section Title End --> */}
+    <section id="features" className="py-20 lg:py-25 xl:py-30">
+      <div className="mx-auto max-w-c-1315 px-4 md:px-8 xl:px-0">
+        <SectionHeader
+          headerInfo={{
+            title: "내 동화 목록",
+            subtitle: "My Novels",
+            description: "내가 만든 동화들을 확인해보세요.",
+          }}
+        />
 
-          <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
-            {/* <!-- Features item Start --> */}
-
-            <SingleNovle />
-
-            {/* <!-- Features item End --> */}
-          </div>
+        <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
+          {novels.map((novel) => (
+            <SingleNovel key={novel._id as string} novel={novel} />
+          ))}
         </div>
-      </section>
-
-      {/* <!-- ===== Features End ===== --> */}
-    </>
+      </div>
+    </section>
   );
 };
 

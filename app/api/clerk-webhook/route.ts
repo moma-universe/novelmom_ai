@@ -5,7 +5,7 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { createUser } from "@/lib/action/user.actions";
 import { IUser } from "@/lib/database/models/user.model";
-import connectToDatabase from "@/lib/database/mongodb";
+import connectToDatabase from "@/lib/database/mongoose";
 
 export async function POST(request: Request) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET as string;

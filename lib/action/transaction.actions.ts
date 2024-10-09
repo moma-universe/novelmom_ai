@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import Transaction, {
   ITransaction,
 } from "../database/models/transaction.model";

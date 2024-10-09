@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Novel, { INovel } from "../database/models/Novel";
 import TextChunk from "../database/models/TextChunk";
 import Image from "../database/models/Image";
-import connectToDatabase from "../database/mongodb";
+import connectToDatabase from "../database/mongoose";
 
 export async function createNovel(
   userId: string,
@@ -82,7 +82,6 @@ export async function createNovel(
 }
 
 export async function getNovels(): Promise<INovel[]> {
-  await connectToDatabase();
   try {
     return await Novel.find()
       .populate("textChunkIds")
@@ -95,7 +94,6 @@ export async function getNovels(): Promise<INovel[]> {
 }
 
 export async function deleteNovel(novelId: string): Promise<void> {
-  await connectToDatabase();
   const session = await mongoose.startSession();
   session.startTransaction();
 
