@@ -1,27 +1,32 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { NextResponse } from "next/server";
-import { deleteNovel } from "@/lib/action/novel.action";
+import Novel from "@/lib/database/models/Novel.model";
 import connectToDatabase from "@/lib/database/mongoose";
+import { deleteNovel } from "@/lib/action/novel.action";
+import { NextResponse } from "next/server";
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "DELETE") {
-    return res.status(405).json({ message: "허용되지 않는 삭제입니다." });
+export async function DELETE(req: Request) {
+  const body = await req.json();
+  const { novelId } = body;
+
+  if (!novelId) {
+    return NextResponse.json(
+      { message: "소설 ID가 필요합니다." },
+      { status: 400 }
+    );
   }
 
-  await connectToDatabase();
-
   try {
-    const { novelId } = req.body;
-    console.log(novelId);
-    if (!novelId) {
+    await connectToDatabase();
+
+    // 소설 정보 가져오기
+    const novel = await Novel.findById(novelId);
+    if (!novel) {
       return NextResponse.json(
-        { message: "NoveId를 찾지 못하였습니다." },
-        { status: 400 }
+        { message: "소설을 찾을 수 없습니다." },
+        { status: 404 }
       );
     }
-
-    // 동화 삭제
     await deleteNovel(novelId);
 
     return NextResponse.json(
@@ -29,7 +34,7 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("삭제 중 오류 발생 :", error);
+    console.error("동화 삭제 중 오류 발생:", error);
     return NextResponse.json(
       { message: "동화 삭제 중 오류가 발생했습니다." },
       { status: 500 }

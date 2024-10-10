@@ -2,14 +2,21 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { INovel } from "@/lib/database/models/Novel.model";
+import { useRouter } from "next/navigation";
+
+import DeleteModal from "../Modal/NovelModal/DeleteModal";
 
 interface SingleNovelProps {
   novel: INovel;
+  onDelete: () => void;
 }
 
-const SingleNovel: React.FC<SingleNovelProps> = ({ novel }) => {
+const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [truncatedText, setTruncatedText] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const router = useRouter();
 
   const cloudflareImageUrls = novel.cloudflareImageUrls || [];
   const defaultImageUrl = "/images/novel/default-novel-image.png";
@@ -44,64 +51,108 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel }) => {
       prevIndex === cloudflareImageUrls.length - 1 ? 0 : prevIndex + 1
     );
   };
+
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const response = await fetch("/api/novel/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ novelId: novel._id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("소설 삭제에 실패했습니다.");
+      } else {
+        setIsDeleteModalOpen(false);
+        router.refresh();
+      }
+
+      onDelete();
+    } catch (error) {
+      console.error("소설 삭제 중 오류 발생:", error);
+      // 여기에 사용자에게 오류 메시지를 표시하는 로직을 추가할 수 있습니다.
+    }
+    setIsDeleteModalOpen(false);
+  };
+
   return (
-    <motion.div
-      variants={{
-        hidden: {
-          opacity: 0,
-          y: -10,
-        },
-        visible: {
-          opacity: 1,
-          y: 0,
-        },
-      }}
-      initial="hidden"
-      whileInView="visible"
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true }}
-      className="animate_top z-40 rounded-lg border border-white bg-white p-7.5 shadow-solid-3 transition-all hover:shadow-solid-4 dark:border-strokedark dark:bg-blacksection dark:hover:bg-hoverdark xl:p-12.5"
-    >
-      <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-primary">
-        <Image
-          src="/images/icon/icon-moon.svg"
-          width={36}
-          height={36}
-          alt={novel.title}
-        />
-      </div>
-      <h3 className="mb-5 mt-7.5 text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-        {novel.title}
-      </h3>
-      <p className="mb-5 overflow-hidden whitespace-nowrap text-ellipsis">
-        {truncatedText}
-      </p>
-      <div className="w-full h-48 relative">
-        <Image
-          src={cloudflareImageUrls[currentImageIndex] || defaultImageUrl}
-          alt={`Image ${currentImageIndex + 1} of ${novel.title}`}
-          layout="fill"
-          objectFit="cover"
-          className="rounded-xl  "
-        />
-        {cloudflareImageUrls.length > 1 && (
-          <>
-            <button
-              onClick={handlePrevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
-            >
-              &#8249;
-            </button>
-            <button
-              onClick={handleNextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
-            >
-              &#8250;
-            </button>
-          </>
-        )}
-      </div>
-    </motion.div>
+    <>
+      <motion.div
+        variants={{
+          hidden: {
+            opacity: 0,
+            y: -10,
+          },
+          visible: {
+            opacity: 1,
+            y: 0,
+          },
+        }}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className="animate_top z-40 rounded-lg border border-white bg-white p-7.5 shadow-solid-3 transition-all hover:shadow-solid-4 dark:border-strokedark dark:bg-blacksection dark:hover:bg-hoverdark xl:p-12.5"
+      >
+        <button
+          onClick={handleDeleteClick}
+          className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
+        >
+          &#10005;
+        </button>
+        <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-primary">
+          <Image
+            src="/images/icon/icon-moon.svg"
+            width={36}
+            height={36}
+            alt={novel.title}
+          />
+        </div>
+        <h3 className="mb-5 mt-7.5 text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
+          {novel.title}
+        </h3>
+        <p className="mb-5 overflow-hidden whitespace-nowrap text-ellipsis">
+          {truncatedText}
+        </p>
+        <div className="w-full h-48 relative">
+          <Image
+            src={cloudflareImageUrls[currentImageIndex] || defaultImageUrl}
+            alt={`Image ${currentImageIndex + 1} of ${novel.title}`}
+            layout="fill"
+            objectFit="cover"
+            className="rounded-xl  "
+          />
+          {cloudflareImageUrls.length > 1 && (
+            <>
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+              >
+                &#8249;
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+              >
+                &#8250;
+              </button>
+            </>
+          )}
+        </div>
+      </motion.div>
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title={novel.title}
+      />
+    </>
   );
 };
 

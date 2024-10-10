@@ -10,27 +10,31 @@ const MyNovelList = () => {
   const [novels, setNovels] = useState<INovel[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchNovels = async () => {
-      if (isLoaded && userId) {
-        try {
-          const response = await fetch(`/api/novel/get?userId=${userId}`);
-          if (response.ok) {
-            const data = await response.json();
-            setNovels(data.novels);
-          } else {
-            console.error("Failed to fetch novels");
-          }
-        } catch (error) {
-          console.error("Error fetching novels:", error);
-        } finally {
-          setLoading(false);
+  const fetchNovels = async () => {
+    if (isLoaded && userId) {
+      try {
+        const response = await fetch(`/api/novel/get?userId=${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setNovels(data.novels);
+        } else {
+          console.error("Failed to fetch novels");
         }
+      } catch (error) {
+        console.error("Error fetching novels:", error);
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchNovels();
   }, [isLoaded, userId]);
+
+  const handleAfterDelete = () => {
+    fetchNovels(); // 소설이 삭제된 후 목록을 다시 불러옵니다.
+  };
 
   return (
     <section id="features" className="py-20 lg:py-25 xl:py-30">
@@ -45,7 +49,11 @@ const MyNovelList = () => {
 
         <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
           {novels.map((novel) => (
-            <SingleNovel key={novel._id as string} novel={novel} />
+            <SingleNovel
+              key={novel._id as string}
+              novel={novel}
+              onDelete={handleAfterDelete}
+            />
           ))}
         </div>
       </div>

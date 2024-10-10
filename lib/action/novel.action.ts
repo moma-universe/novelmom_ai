@@ -3,7 +3,8 @@ import Novel, { INovel } from "../database/models/Novel.model";
 import TextChunk from "../database/models/TextChunk.model";
 import Image from "../database/models/Image.model";
 import connectToDatabase from "../database/mongoose";
-import { uploadImageToCloudflare } from "../cloudflare/cloudflare";
+import { uploadImageToCloudflare } from "../cloudflare/cloudflare-create.actions";
+import { deleteCloudflareImageUtil } from "../cloudflare/cloudflare-delete.actions";
 
 export async function createNovel(
   userId: string,
@@ -109,18 +110,33 @@ export async function deleteNovel(novelId: string): Promise<void> {
       throw new Error("소설을 찾을 수 없습니다.");
     }
 
-    await Novel.findByIdAndDelete(novelId).session(session);
-    await TextChunk.deleteMany({ novelId }).session(session);
-    await Image.deleteMany({ novelId }).session(session);
+    // 텍스트 청크 삭제
+    await TextChunk.deleteMany({ _id: { $in: novel.textChunkIds } });
+
+    // 이미지 삭제
+    await Image.deleteMany({ _id: { $in: novel.imageIds } });
+
+    // 소설 삭제
+    await Novel.findByIdAndDelete(novelId);
+
+    // Cloudflare 이미지 삭제
+    for (const imageUrl of novel.cloudflareImageUrls) {
+      const imageId = imageUrl.split("/").pop(); // URL에서 이미지 ID 추출
+      if (imageId) {
+        await deleteCloudflareImageUtil(imageId);
+      }
+    }
 
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
-    if (error instanceof mongoose.Error.CastError) {
-      throw new Error("잘못된 소설 ID 형식입니다.");
+    console.error("소설 삭제 중 오류 발생:", error);
+    if (error instanceof mongoose.Error) {
+      throw new Error("데이터베이스 오류: 소설을 삭제할 수 없습니다.");
+    } else if (error instanceof Error) {
+      throw error;
     } else {
-      console.error("소설 삭제 중 오류 발생:", error);
-      throw new Error("소설을 삭제하는 중 오류가 발생했습니다.");
+      throw new Error("소설 삭제 중 알 수 없는 오류가 발생했습니다.");
     }
   } finally {
     session.endSession();
