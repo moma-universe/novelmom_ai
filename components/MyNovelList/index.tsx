@@ -45,7 +45,6 @@ const MyNovelList = () => {
   };
 
   const handleNovelClick = (novel: INovel) => {
-    console.log(novel);
     setSelectedNovel(novel);
   };
 
@@ -84,6 +83,7 @@ const MyNovelList = () => {
       </div>
       {selectedNovel && (
         <SingleNovelModal
+          novel={selectedNovel}
           textChunks={extractTextChunks(selectedNovel)}
           cloudflareImageUrls={selectedNovel.cloudflareImageUrls || []}
           cloudflareImageIds={selectedNovel.cloudflareImageIds || []}

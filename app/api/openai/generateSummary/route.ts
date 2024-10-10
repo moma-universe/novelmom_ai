@@ -1,19 +1,6 @@
 import { NextResponse } from "next/server";
 
-//줄거리 추가 생성 시에는 api를 따로 만들어야 하나
-
-interface FormData {
-  genre: string;
-  title: string;
-  age: number;
-  mood: string;
-  summary: string;
-}
-
 export async function POST(request: Request) {
-  const formData: FormData = await request.json();
-  const { genre, title, age, mood, summary } = formData;
-
   try {
     // OpenAI API 키를 환경 변수에서 가져옵니다.
     const apiKey = process.env.OPENAI_API_KEY;
@@ -24,7 +11,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Chat Completion 요청
+    const { extractedText, genre, title, age, mood } = await request.json();
+
     const chatResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -43,7 +31,7 @@ export async function POST(request: Request) {
             },
             {
               role: "user",
-              content: `장르: ${genre}\n제목: ${title}\n연령: ${age}\n분위기: ${mood}\n줄거리: ${summary}\n위 정보를 바탕으로 창의적이고 해당 연령이 이해할 수 있고 좋아할 만한 동화 줄거리를 작성해 주세요.`,
+              content: `장르: ${genre}\n제목: ${title}\n연령: ${age}\n분위기: ${mood}\n줄거리: ${extractedText}\n위 정보를 바탕으로 창의적이고 해당 연령이 이해할 수 있고 좋아할 만한 동화 줄거리를 작성해 주세요.`,
             },
           ],
           max_tokens: 400,
@@ -78,20 +66,9 @@ export async function POST(request: Request) {
       currentIndex = nextIndex;
     }
 
-    // 각 텍스트 조각에 대해 이미지 생성
-
-    // 데이터베이스와 연동 후 이전 이미지와 텍스트를 가져와야 함.
     const images: string[] = [];
-    let previousImageUrl: string[] = [];
-    let previousTransformedText: string[] = [];
-
-    // 이야기를 끝맺지 못하는 점 수정 필요.
-    // 동화 만들 시 로딩 토스트바.
-    // 추가로 생성되는 이미지와 텍스트는 팝업 형태로 나와서 옆으로 넘기게끔.
-    // 2회차로 넘어갈 때 데이터베이스에서 이미지와 텍스트를 불러와서 다음 텍스트와 이미지를 생성할 수 있게 변경.
 
     for (const chunk of textChunks) {
-      // 텍스트 변환을 위한 Chat Completion API 호출
       const transformResponse = await fetch(
         "https://api.openai.com/v1/chat/completions",
         {
@@ -110,7 +87,7 @@ export async function POST(request: Request) {
               },
               {
                 role: "user",
-                content: `${previousTransformedText} ${chunk}`,
+                content: `${chunk}`,
               },
             ],
             max_tokens: 200,
@@ -123,6 +100,8 @@ export async function POST(request: Request) {
       const transformedText =
         transformData.choices?.[0].message?.content.trim() || "";
 
+      console.log(transformedText);
+
       const imageResponse = await fetch(
         "https://api.openai.com/v1/images/generations",
         {
@@ -133,7 +112,7 @@ export async function POST(request: Request) {
           },
           body: JSON.stringify({
             model: "dall-e-3",
-            prompt: `${previousImageUrl} ${transformedText}`,
+            prompt: `${transformedText}`,
             size: "1024x1024",
             quality: "standard",
             n: 1,
@@ -145,8 +124,7 @@ export async function POST(request: Request) {
       const imageUrl = imageData.data?.[0]?.url || "";
 
       images.push(imageUrl);
-      previousImageUrl = imageUrl;
-      previousTransformedText = transformedText;
+      console.log(imageUrl);
     }
     return NextResponse.json({
       textChunks,
