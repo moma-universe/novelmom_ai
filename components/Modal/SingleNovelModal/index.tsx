@@ -1,10 +1,10 @@
 import Carousel from "@/components/Carousel";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import CustomToast from "@/components/Toast";
 import { useRouter } from "next/navigation";
+import SingleNovelCarousel from "@/components/Carousel/SingleNovelCarousel";
 import SkeletonNovel from "@/components/\bSkeleton";
-import { INovel } from "@/lib/database/models/Novel.model";
 
 interface SingleNovelModalProps {
   onClose: () => void;
@@ -23,6 +23,7 @@ const SingleNovelModal: React.FC<SingleNovelModalProps> = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [isLastSlide, setIsLastSlide] = useState(false); // 마지막 슬라이드인지 확인
   const router = useRouter();
 
   useEffect(() => {
@@ -47,6 +48,10 @@ const SingleNovelModal: React.FC<SingleNovelModalProps> = ({
       loadImages();
     }
   }, [textChunks, cloudflareImageUrls]);
+
+  const handleLastSlide = useCallback((isLast: boolean) => {
+    setIsLastSlide(isLast);
+  }, []);
 
   //   const handleSave = async (e: React.FormEvent) => {
   //     e.preventDefault();
@@ -138,49 +143,26 @@ const SingleNovelModal: React.FC<SingleNovelModalProps> = ({
             </div>
             <div className="h-[calc(90vh-200px)] overflow-y-auto">
               {isContentLoaded ? (
-                <Carousel
-                  generatedTextChunks={textChunks}
-                  generatedImages={cloudflareImageUrls}
+                <SingleNovelCarousel
+                  textChunks={textChunks}
+                  cloudflareImageUrls={cloudflareImageUrls}
+                  onLastSlide={handleLastSlide}
                 />
               ) : (
                 <SkeletonNovel />
               )}
             </div>
             <div className="bg-white dark:bg-black px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200 dark:border-gray-700 rounded-b-xl overflow-hidden">
-              <button
-                type="button"
-                // onClick={handleSave}
-                disabled={loading || isSaved}
-                className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
-              >
-                {loading ? (
-                  <div className="flex flex-row items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <p>저장중...</p>
-                  </div>
-                ) : (
-                  "저장"
-                )}
-              </button>
+              {isLastSlide && (
+                <button
+                  type="button"
+                  // onClick={handleSave}
+                  disabled={loading || isSaved}
+                  className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                >
+                  <span>줄거리 생성하기</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
