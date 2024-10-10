@@ -21,7 +21,7 @@ export async function createNovel(
   session.startTransaction();
 
   try {
-    const cloudflareImageUrls = await Promise.all(
+    const cloudflareImages = await Promise.all(
       generatedImages.map((imageUrl) => uploadImageToCloudflare(imageUrl))
     );
     const newNovel = new Novel({
@@ -32,7 +32,8 @@ export async function createNovel(
       mood,
       summary,
       originalImageUrls: generatedImages,
-      cloudflareImageUrls,
+      cloudflareImageUrls: cloudflareImages.map((img) => img.imageUrl),
+      cloudflareImageIds: cloudflareImages.map((img) => img.imageId),
     });
 
     const savedNovel = await newNovel.save({ session });
@@ -120,11 +121,17 @@ export async function deleteNovel(novelId: string): Promise<void> {
     await Novel.findByIdAndDelete(novelId);
 
     // Cloudflare 이미지 삭제
-    for (const imageUrl of novel.cloudflareImageUrls) {
-      const imageId = imageUrl.split("/").pop(); // URL에서 이미지 ID 추출
-      if (imageId) {
-        await deleteCloudflareImageUtil(imageId);
+    if (novel.cloudflareImageIds && novel.cloudflareImageIds.length > 0) {
+      for (const imageId of novel.cloudflareImageIds) {
+        try {
+          await deleteCloudflareImageUtil(imageId);
+        } catch (error) {
+          console.error(`Cloudflare 이미지 삭제 실패 (ID: ${imageId}):`, error);
+          // 개별 이미지 삭제 실패를 기록하지만 전체 프로세스는 계속 진행
+        }
       }
+    } else {
+      console.warn("Cloudflare 이미지 ID가 없습니다.");
     }
 
     await session.commitTransaction();

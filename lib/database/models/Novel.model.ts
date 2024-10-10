@@ -11,6 +11,7 @@ export interface INovel extends Document {
   imageIds: mongoose.Types.ObjectId[];
   originalImageUrls: string[];
   cloudflareImageUrls: string[];
+  cloudflareImageIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,7 @@ const NovelSchema: Schema = new Schema(
     imageIds: [{ type: Schema.Types.ObjectId, ref: "Image" }],
     originalImageUrls: [{ type: String }],
     cloudflareImageUrls: [{ type: String }],
+    cloudflareImageIds: [{ type: String }],
   },
   { timestamps: true }
 );

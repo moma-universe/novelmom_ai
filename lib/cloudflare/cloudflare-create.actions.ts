@@ -1,6 +1,10 @@
+interface CloudflareImageUploadResult {
+  imageUrl: string;
+  imageId: string;
+}
 export async function uploadImageToCloudflare(
   imageUrl: string
-): Promise<string> {
+): Promise<CloudflareImageUploadResult> {
   const formData = new FormData();
   formData.append("url", imageUrl);
 
@@ -25,12 +29,16 @@ export async function uploadImageToCloudflare(
     }
 
     const data = await response.json();
+
     if (!data.success) {
       console.error("Cloudflare API Error:", data.errors);
       throw new Error("Failed to upload image to Cloudflare");
     }
 
-    return data.result.variants[0];
+    return {
+      imageUrl: data.result.variants[0],
+      imageId: data.result.id,
+    };
   } catch (error) {
     console.error("Error uploading image to Cloudflare:", error);
     throw error;
