@@ -22,9 +22,7 @@ const SingleCreate = () => {
     }
   }, [isLoaded, userId, router]);
 
-  // 로딩 중이거나 사용자가 없으면 아무것도 렌더링하지 않음
   if (!isLoaded || !userId) {
-    //toast
     return null;
   }
 
@@ -40,6 +38,7 @@ const SingleCreate = () => {
   const [generatedTextChunks, setGeneratedTextChunks] = useState<string[]>([]);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isFormDisabled, setIsFormDisabled] = useState(false);
 
   const [showReplayModal, setShowReplayModal] = useState(false);
 
@@ -53,16 +52,24 @@ const SingleCreate = () => {
     }));
   };
 
+  const isFormValid = () => {
+    return Object.values(formData).every((value) =>
+      typeof value === "string" ? value.trim() !== "" : value !== null
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isButtonDisabled) {
+    if (!isFormValid() || isButtonDisabled) {
       return;
     }
+
     setLoading(true);
     setGeneratedTextChunks([]);
     setGeneratedImages([]);
     setIsButtonDisabled(true);
+    setIsFormDisabled(true);
 
     setTimeout(() => {
       setIsButtonDisabled(false);
@@ -88,6 +95,7 @@ const SingleCreate = () => {
       }
       if (response.ok) {
         setShowModal(true);
+        setIsFormDisabled(true);
       }
     } catch (error) {
       console.error("오류 발생:", error);
@@ -112,10 +120,29 @@ const SingleCreate = () => {
     setShowReGenerateModal(true);
   };
 
-  // Novel Regenerate
   const handleReGenerateConfirm = async () => {
     try {
-      router.push("/create");
+      setFormData({
+        genre: "",
+        title: "",
+        age: 0,
+        mood: "",
+        summary: "",
+      });
+
+      // 생성된 텍스트 및 이미지 초기화
+      setGeneratedTextChunks([]);
+      setGeneratedImages([]);
+
+      // 폼 및 버튼 상태 초기화
+      setIsFormDisabled(false);
+      setIsButtonDisabled(false);
+
+      // 모달 닫기
+      setShowReGenerateModal(false);
+
+      // 선택적: 페이지 상단으로 스크롤
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error("다시 만들기 오류 : ", error);
     } finally {
@@ -175,7 +202,7 @@ const SingleCreate = () => {
           className="flex flex-col items-center justify-center gap-2.5"
           onSubmit={handleSubmit}
         >
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-[#5db48b]">
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-[4px] bg-primary">
             <Image
               src="/images/icon/icon-novel-create.svg"
               width={36}
@@ -184,7 +211,7 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
-            <label className="text-center  text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
+            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
               <span>동화 장르</span>
             </label>
             <input
@@ -195,6 +222,8 @@ const SingleCreate = () => {
               value={formData.genre}
               onChange={handleChange}
               placeholder="동화 장르"
+              disabled={isFormDisabled}
+              autoComplete="genre"
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
@@ -209,6 +238,8 @@ const SingleCreate = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="동화 제목"
+              autoComplete="off"
+              disabled={isFormDisabled}
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
@@ -223,6 +254,8 @@ const SingleCreate = () => {
               value={formData.age}
               onChange={handleChange}
               placeholder="동화 연령"
+              autoComplete="off"
+              disabled={isFormDisabled}
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
@@ -237,6 +270,8 @@ const SingleCreate = () => {
               value={formData.mood}
               onChange={handleChange}
               placeholder="동화 장르"
+              autoComplete="off"
+              disabled={isFormDisabled}
             />
           </div>
           <div className="flex flex-col items-start justify-center w-full mt-5 gap-3">
@@ -249,8 +284,10 @@ const SingleCreate = () => {
               name="summary"
               value={formData.summary}
               onChange={handleChange}
+              disabled={isFormDisabled}
               placeholder="간략한 줄거리를 10줄 이하로 입력해 주세요"
               rows={10}
+              autoComplete="off"
             />
           </div>
 
@@ -275,8 +312,12 @@ const SingleCreate = () => {
               <>
                 <button
                   type="submit"
-                  className="bg-[#5db48b] text-white py-2 px-4 rounded-full w-full hover:bg-green-600 mt-2"
-                  disabled={loading}
+                  className={`bg-primary text-white py-2 px-4 rounded-full w-full hover:bg-blue-700 mt-2 ${
+                    !isFormValid() || isButtonDisabled
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={!isFormValid() || isButtonDisabled}
                 >
                   {loading ? (
                     <div className="flex flex-row items-center justify-center">

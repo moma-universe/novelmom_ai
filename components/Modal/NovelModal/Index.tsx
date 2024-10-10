@@ -2,6 +2,7 @@ import Carousel from "@/components/Carousel";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import CustomToast from "@/components/Toast";
+import { useRouter } from "next/navigation";
 
 // 저장은 다시 한번 누를 때 이미 데이터베이스에 있는 저장 정보이면 Toast 메시지 띄워주기.
 // 토스트 메시지 제일 상단으로 위치.
@@ -28,9 +29,12 @@ const NovelModal: React.FC<NovelModalProps> = ({
   formData,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const router = useRouter();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || isSaved) return;
     setLoading(true);
     try {
       const createResponse = await fetch("/api/novel/create", {
@@ -49,6 +53,7 @@ const NovelModal: React.FC<NovelModalProps> = ({
       const responseData = await createResponse.json();
 
       if (createResponse.ok) {
+        setIsSaved(true);
         toast.custom(
           (t) => (
             <CustomToast
@@ -91,6 +96,8 @@ const NovelModal: React.FC<NovelModalProps> = ({
       );
     } finally {
       setLoading(false);
+      onClose(); // 모달 닫기
+      router.push("/mynovel"); // mynovel 페이지로 이동
     }
   };
   return (
@@ -123,10 +130,10 @@ const NovelModal: React.FC<NovelModalProps> = ({
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={loading}
+                disabled={loading || isSaved}
                 className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
               >
-                {loading ? (
+                {loading || isSaved ? (
                   <div className="flex flex-row items-center justify-center">
                     <svg
                       className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -159,7 +166,7 @@ const NovelModal: React.FC<NovelModalProps> = ({
                 onClick={onClose}
                 className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-black hover:opacity-90 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
               >
-                다시 만들기
+                닫기
               </button>
             </div>
           </div>
