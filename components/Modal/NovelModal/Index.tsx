@@ -1,11 +1,9 @@
 import Carousel from "@/components/Carousel";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import CustomToast from "@/components/Toast";
 import { useRouter } from "next/navigation";
-
-// 저장은 다시 한번 누를 때 이미 데이터베이스에 있는 저장 정보이면 Toast 메시지 띄워주기.
-// 토스트 메시지 제일 상단으로 위치.
+import SkeletonNovel from "@/components/\bSkeleton";
 
 interface NovelModalProps {
   onClose: () => void;
@@ -30,7 +28,32 @@ const NovelModal: React.FC<NovelModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+    const loadImages = async () => {
+      const imagePromises = generatedImages.map((src) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            setImagesLoaded((prev) => prev + 1);
+            resolve(null);
+          };
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+      });
+
+      await Promise.all(imagePromises);
+      setIsContentLoaded(true);
+    };
+
+    if (generatedTextChunks.length > 0 && generatedImages.length > 0) {
+      loadImages();
+    }
+  }, [generatedTextChunks, generatedImages]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,11 +143,15 @@ const NovelModal: React.FC<NovelModalProps> = ({
                 동화 생성 완료
               </h3>
             </div>
-            <div className="h-[calc(90vh-200px)] overflow-y-auto ">
-              <Carousel
-                generatedTextChunks={generatedTextChunks}
-                generatedImages={generatedImages}
-              />
+            <div className="h-[calc(90vh-200px)] overflow-y-auto">
+              {isContentLoaded ? (
+                <Carousel
+                  generatedTextChunks={generatedTextChunks}
+                  generatedImages={generatedImages}
+                />
+              ) : (
+                <SkeletonNovel />
+              )}
             </div>
             <div className="bg-white dark:bg-black px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200 dark:border-gray-700 rounded-b-xl overflow-hidden">
               <button
@@ -133,7 +160,7 @@ const NovelModal: React.FC<NovelModalProps> = ({
                 disabled={loading || isSaved}
                 className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
               >
-                {loading || isSaved ? (
+                {loading ? (
                   <div className="flex flex-row items-center justify-center">
                     <svg
                       className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

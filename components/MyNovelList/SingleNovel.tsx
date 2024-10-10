@@ -19,8 +19,6 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
     "idle" | "deleting" | "completed" | "error"
   >("idle");
 
-  const router = useRouter();
-
   const cloudflareImageUrls = novel.cloudflareImageUrls || [];
   const defaultImageUrl = "/images/novel/default-novel-image.png";
 

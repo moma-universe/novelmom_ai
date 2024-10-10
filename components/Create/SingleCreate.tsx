@@ -269,7 +269,7 @@ const SingleCreate = () => {
               name="mood"
               value={formData.mood}
               onChange={handleChange}
-              placeholder="동화 장르"
+              placeholder="동화 분위기"
               autoComplete="off"
               disabled={isFormDisabled}
             />

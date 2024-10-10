@@ -4,6 +4,7 @@ import SectionHeader from "../Common/SectionHeader";
 import { useAuth } from "@clerk/nextjs";
 import SingleNovel from "./SingleNovel";
 import { INovel } from "@/lib/database/models/Novel.model";
+import SkeletonNovel from "../\bSkeleton";
 
 const MyNovelList = () => {
   const { isLoaded, userId } = useAuth();
@@ -53,13 +54,17 @@ const MyNovelList = () => {
         />
 
         <div className="mt-12.5 grid grid-cols-1 gap-7.5 md:grid-cols-2 lg:mt-15 lg:grid-cols-3 xl:mt-20 xl:gap-12.5">
-          {novels.map((novel) => (
-            <SingleNovel
-              key={novel._id as string}
-              novel={novel}
-              onDelete={handleAfterDelete}
-            />
-          ))}
+          {loading
+            ? Array(6)
+                .fill(0)
+                .map((_, index) => <SkeletonNovel key={index} />)
+            : novels.map((novel) => (
+                <SingleNovel
+                  key={novel._id as string}
+                  novel={novel}
+                  onDelete={handleAfterDelete}
+                />
+              ))}
         </div>
       </div>
     </section>
