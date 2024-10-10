@@ -5,11 +5,13 @@ import { useAuth } from "@clerk/nextjs";
 import SingleNovel from "./SingleNovel";
 import { INovel } from "@/lib/database/models/Novel.model";
 import SkeletonNovel from "../\bSkeleton";
+import SingleNovelModal from "../Modal/SingleNovelModal";
 
 const MyNovelList = () => {
   const { isLoaded, userId } = useAuth();
   const [novels, setNovels] = useState<INovel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedNovel, setSelectedNovel] = useState<INovel | null>(null);
 
   const fetchNovels = async () => {
     if (isLoaded && userId) {
@@ -42,6 +44,18 @@ const MyNovelList = () => {
     fetchNovels(); // 소설이 삭제된 후 목록을 다시 불러옵니다.
   };
 
+  const handleNovelClick = (novel: INovel) => {
+    console.log(novel);
+    setSelectedNovel(novel);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedNovel(null);
+  };
+  const extractTextChunks = (novel: INovel) => {
+    return novel.textChunkIds.map((chunk: any) => chunk.text);
+  };
+
   return (
     <section id="features" className="py-20 lg:py-25 xl:py-30">
       <div className="mx-auto max-w-c-1315 px-4 md:px-8 xl:px-0">
@@ -59,14 +73,23 @@ const MyNovelList = () => {
                 .fill(0)
                 .map((_, index) => <SkeletonNovel key={index} />)
             : novels.map((novel) => (
-                <SingleNovel
+                <div
                   key={novel._id as string}
-                  novel={novel}
-                  onDelete={handleAfterDelete}
-                />
+                  onClick={() => handleNovelClick(novel)}
+                >
+                  <SingleNovel novel={novel} onDelete={handleAfterDelete} />
+                </div>
               ))}
         </div>
       </div>
+      {selectedNovel && (
+        <SingleNovelModal
+          textChunks={extractTextChunks(selectedNovel)}
+          cloudflareImageUrls={selectedNovel.cloudflareImageUrls || []}
+          cloudflareImageIds={selectedNovel.cloudflareImageIds || []}
+          onClose={handleCloseModal}
+        />
+      )}
     </section>
   );
 };

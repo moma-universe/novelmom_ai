@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import NovelModal from "../Modal/NovelModal/Index";
 
 import ReGenerateModal from "../Modal/ReGenerateModal";
+import tipInfo from "@/constants/tip";
 
 const SingleCreate = () => {
   const { isLoaded, userId } = useAuth();
@@ -211,8 +212,16 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
-            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-              <span>동화 장르</span>
+            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle flex items-center">
+              <div className="relative group">
+                <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs rounded-xl py-1 px-2 w-48 invisible group-hover:visible transition-all duration-200 z-10">
+                  {tipInfo.genre}
+                </div>
+              </div>
+              <span className="ml-2 ">동화 장르</span>
             </label>
             <input
               className="flex-1 shadow appearance-none border w-full py-2 px-3 ml-5 text-white leading-tight focus:outline-offset-1 outline-green-200 focus:shadow-outline rounded-full"
@@ -227,8 +236,16 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
-            <label className="text-center  text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-              <span>동화 제목</span>
+            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle flex items-center">
+              <div className="relative group">
+                <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs rounded-xl py-1 px-2 w-48 invisible group-hover:visible transition-all duration-200 z-10">
+                  {tipInfo.title}
+                </div>
+              </div>
+              <span className="ml-2 ">동화 제목</span>
             </label>
             <input
               className="flex-1 shadow appearance-none border w-full py-2 px-3 ml-5 text-white leading-tight focus:outline-offset-1 outline-green-200 focus:shadow-outline rounded-full"
@@ -243,8 +260,16 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
-            <label className="text-center  text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-              <span>동화 연령</span>
+            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle flex items-center">
+              <div className="relative group">
+                <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs rounded-xl py-1 px-2 w-48 invisible group-hover:visible transition-all duration-200 z-10">
+                  {tipInfo.age}
+                </div>
+              </div>
+              <span className="ml-2 ">동화 연령</span>
             </label>
             <input
               className="flex-1 shadow appearance-none border w-full py-2 px-3 ml-5 text-white leading-tight focus:outline-offset-1 outline-green-200 focus:shadow-outline rounded-full"
@@ -259,8 +284,16 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-row items-center justify-center w-full mt-5">
-            <label className="text-center  text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-              <span>동화 분위기</span>
+            <label className="text-center text-xl font-semibold text-black dark:text-white xl:text-itemtitle flex items-center">
+              <div className="relative group">
+                <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs rounded-xl py-1 px-2 w-48 invisible group-hover:visible transition-all duration-200 z-10">
+                  {tipInfo.mood}
+                </div>
+              </div>
+              <span className="ml-2 ">동화 분위기</span>
             </label>
             <input
               className="flex-1 shadow appearance-none border w-full py-2 px-3 ml-5 text-white leading-tight focus:outline-offset-1 outline-green-200 focus:shadow-outline rounded-full"
@@ -275,8 +308,16 @@ const SingleCreate = () => {
             />
           </div>
           <div className="flex flex-col items-start justify-center w-full mt-5 gap-3">
-            <label className="text-start text-xl font-semibold text-black dark:text-white xl:text-itemtitle">
-              <span>간략한 줄거리</span>
+            <label className="text-start text-xl font-semibold text-black dark:text-white xl:text-itemtitle flex items-center">
+              <div className="relative  group">
+                <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center cursor-help">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-black text-white text-xs rounded py-1 px-2 w-48 invisible group-hover:visible transition-all duration-200 z-10">
+                  {tipInfo.summary}
+                </div>
+              </div>
+              <span className="ml-2">간략한 줄거리</span>
             </label>
             <textarea
               className="flex-1 shadow appearance-none border w-full py-2 px-3 text-white leading-tight focus:outline-offset-1 outline-green-200 focus:shadow-outline rounded-xl"
