@@ -29,26 +29,6 @@ const NovelModal: React.FC<NovelModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const downloadImage = async (imageUrl: string, fileName: string) => {
-    try {
-      const response = await fetch(
-        `/api/openai/download-image?url=${encodeURIComponent(imageUrl)}`
-      );
-      if (!response.ok) throw new Error("Network response was not ok");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("이미지 다운로드 중 오류 발생:", error);
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -68,24 +48,7 @@ const NovelModal: React.FC<NovelModalProps> = ({
 
       const responseData = await createResponse.json();
 
-      console.log("Server Response: ", responseData);
-
       if (createResponse.ok) {
-        // 각 이미지에 대해 다운로드 함수 호출
-        if (
-          responseData.cloudflareImageUrls &&
-          Array.isArray(responseData.cloudflareImageUrls)
-        ) {
-          responseData.cloudflareImageUrls.forEach(
-            (imageUrl: string, index: number) => {
-              downloadImage(imageUrl, `동화_이미지_${index + 1}.png`);
-            }
-          );
-        } else {
-          console.error("Cloudflare image URLs not found in the response");
-          toast.error("이미지 URL을 받아오는데 실패했습니다.");
-        }
-
         toast.custom(
           (t) => (
             <CustomToast
@@ -107,32 +70,28 @@ const NovelModal: React.FC<NovelModalProps> = ({
         throw new Error(
           responseData.error || "알 수 없는 오류가 발생했습니다."
         );
-        toast.custom(
-          (t) => (
-            <CustomToast
-              t={t}
-              title="동화 저장 실패"
-              message="동화 저장 중 오류가 발생했습니다."
-              onClose={() => toast.dismiss(t.id)}
-              icon="/images/icon/fox.png"
-              bgColor="#ffffff"
-              textColor="#f55d5d"
-            />
-          ),
-          {
-            duration: 5000,
-          }
-        );
       }
     } catch (error) {
       console.error("오류 발생:", error);
-      toast.error("동화 저장 중 오류가 발생했습니다.");
+      toast.custom(
+        (t) => (
+          <CustomToast
+            t={t}
+            title="동화 저장 실패"
+            message="동화 저장 중 오류가 발생했습니다."
+            onClose={() => toast.dismiss(t.id)}
+            icon="/images/icon/fox.png"
+            bgColor="#ffffff"
+            textColor="#f55d5d"
+          />
+        ),
+        {
+          duration: 5000,
+        }
+      );
     } finally {
       setLoading(false);
     }
-    setTimeout(() => {
-      setLoading(false);
-    }, 3000);
   };
   return (
     <div

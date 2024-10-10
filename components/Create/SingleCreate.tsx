@@ -306,13 +306,6 @@ const SingleCreate = () => {
                     "동화 만들기"
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleReGenerateClick}
-                  className="dark:bg-black bg-white border border-gray-300 dark:border-gray-700 hover:opacity-80 text-white py-2 px-4 rounded-full hover:bg-red-500 mt-2 w-full"
-                >
-                  다시 만들기
-                </button>
               </>
             ) : (
               <>
@@ -322,6 +315,13 @@ const SingleCreate = () => {
                   className="bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600 mt-2 w-full"
                 >
                   크게보기
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReGenerateClick}
+                  className="dark:bg-black bg-white border border-gray-300 dark:border-gray-700 hover:opacity-80 text-white py-2 px-4 rounded-full hover:bg-red-500 mt-2 w-full"
+                >
+                  다시 만들기
                 </button>
               </>
             )}

@@ -38,8 +38,6 @@ export async function createNovel(
 
     const savedNovel = await newNovel.save({ session });
 
-    console.log("savedNovel : ", savedNovel);
-
     const textChunkPromises = generatedTextChunks.map((text, index) =>
       new TextChunk({
         novelId: savedNovel._id,

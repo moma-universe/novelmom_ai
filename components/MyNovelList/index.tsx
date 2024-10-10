@@ -16,7 +16,12 @@ const MyNovelList = () => {
         const response = await fetch(`/api/novel/get?userId=${userId}`);
         if (response.ok) {
           const data = await response.json();
-          setNovels(data.novels);
+          const sortedNovels = data.novels.sort((a: INovel, b: INovel) => {
+            return (
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          });
+          setNovels(sortedNovels);
         } else {
           console.error("Failed to fetch novels");
         }

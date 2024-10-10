@@ -12,7 +12,6 @@ export async function deleteCloudflareImageUtil(
     throw new Error("유효한 이미지 ID가 제공되지 않았습니다.");
   }
 
-  console.log(`Cloudflare 이미지 삭제 시작: ${imageId}`);
   try {
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${encodeURIComponent(

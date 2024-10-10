@@ -15,6 +15,9 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [truncatedText, setTruncatedText] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<
+    "idle" | "deleting" | "completed" | "error"
+  >("idle");
 
   const router = useRouter();
 
@@ -57,6 +60,7 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
   };
 
   const handleDeleteConfirm = async () => {
+    setDeleteStatus("deleting");
     try {
       const response = await fetch("/api/novel/delete", {
         method: "DELETE",
@@ -70,13 +74,19 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
         throw new Error("소설 삭제에 실패했습니다.");
       } else {
         setIsDeleteModalOpen(false);
-        router.refresh();
       }
+      setDeleteStatus("completed");
 
       onDelete();
+
+      // 삭제 완료 후 3초 뒤에 MyNovel 페이지로 리다이렉트
+      setTimeout(() => {
+        setIsDeleteModalOpen(false);
+      }, 3000);
     } catch (error) {
       console.error("소설 삭제 중 오류 발생:", error);
-      // 여기에 사용자에게 오류 메시지를 표시하는 로직을 추가할 수 있습니다.
+
+      setDeleteStatus("error");
     }
     setIsDeleteModalOpen(false);
   };
@@ -148,9 +158,13 @@ const SingleNovel: React.FC<SingleNovelProps> = ({ novel, onDelete }) => {
       </motion.div>
       <DeleteModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteStatus("idle");
+        }}
         onConfirm={handleDeleteConfirm}
         title={novel.title}
+        status={deleteStatus}
       />
     </>
   );
